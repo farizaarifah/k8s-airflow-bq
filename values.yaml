@@ -273,32 +273,32 @@ executor: "CeleryExecutor"
 allowPodLaunching: true
 
 # Environment variables for all airflow containers
-env:
-- name: DB_COLMS_NAME_STG
-  valueFrom:
-    secretKeyRef:
-      name: colms  # Sesuaikan nama secret di sini
-      key: DB_COLMS_NAME_STG
-- name: DB_COLMS_PASSWORD_STG
-  valueFrom:
-    secretKeyRef:
-      name: colms
-      key: DB_COLMS_PASSWORD_STG
-- name: DB_COLMS_PORT_STG
-  valueFrom:
-    secretKeyRef:
-      name: colms
-      key: DB_COLMS_PORT_STG
-- name: DB_COLMS_SERVER_STG
-  valueFrom:
-    secretKeyRef:
-      name: colms
-      key: DB_COLMS_SERVER_STG
-- name: DB_COLMS_USERNAME_STG
-  valueFrom:
-    secretKeyRef:
-      name: colms
-      key: DB_COLMS_USERNAME_STG
+# env:
+# - name: DB_COLMS_NAME_STG
+#   valueFrom:
+#     secretKeyRef:
+#       name: colms  # Sesuaikan nama secret di sini
+#       key: DB_COLMS_NAME_STG
+# - name: DB_COLMS_PASSWORD_STG
+#   valueFrom:
+#     secretKeyRef:
+#       name: colms
+#       key: DB_COLMS_PASSWORD_STG
+# - name: DB_COLMS_PORT_STG
+#   valueFrom:
+#     secretKeyRef:
+#       name: colms
+#       key: DB_COLMS_PORT_STG
+# - name: DB_COLMS_SERVER_STG
+#   valueFrom:
+#     secretKeyRef:
+#       name: colms
+#       key: DB_COLMS_SERVER_STG
+# - name: DB_COLMS_USERNAME_STG
+#   valueFrom:
+#     secretKeyRef:
+#       name: colms
+#       key: DB_COLMS_USERNAME_STG
 
 # Volumes for all airflow containers
 volumes: []
@@ -307,10 +307,26 @@ volumes: []
 volumeMounts: []
 
 # Secrets for all airflow containers
-secret: []
+secret: 
 # - envName: ""
 #   secretName: ""
 #   secretKey: ""
+  - envName: DB_COLMS_NAME_STG
+    secretName: my-secrets
+    secretKey: DB_COLMS_NAME_STG
+  - envName: DB_COLMS_PASSWORD_STG
+    secretName: my-secrets
+    secretKey: DB_COLMS_PASSWORD_STG
+  - envName: DB_COLMS_PORT_STG
+    secretName: my-secrets
+    secretKey: DB_COLMS_PORT_STG
+  - envName: DB_COLMS_SERVER_STG
+    secretName: my-secrets
+    secretKey: DB_COLMS_SERVER_STG
+  - envName: DB_COLMS_USERNAME_STG
+    secretName: my-secrets
+    secretKey: DB_COLMS_USERNAME_STG
+
 
 # Enables selected built-in secrets that are set via environment variables by default.
 # Those secrets are provided by the Helm Chart secrets by default but in some cases you
