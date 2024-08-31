@@ -312,19 +312,19 @@ secret:
 #   secretName: ""
 #   secretKey: ""
   - envName: DB_COLMS_NAME_STG
-    secretName: my-secrets
+    secretName: colms
     secretKey: DB_COLMS_NAME_STG
   - envName: DB_COLMS_PASSWORD_STG
-    secretName: my-secrets
+    secretName: colms
     secretKey: DB_COLMS_PASSWORD_STG
   - envName: DB_COLMS_PORT_STG
-    secretName: my-secrets
+    secretName: colms
     secretKey: DB_COLMS_PORT_STG
   - envName: DB_COLMS_SERVER_STG
-    secretName: my-secrets
+    secretName: colms
     secretKey: DB_COLMS_SERVER_STG
   - envName: DB_COLMS_USERNAME_STG
-    secretName: my-secrets
+    secretName: colms
     secretKey: DB_COLMS_USERNAME_STG
 
 
