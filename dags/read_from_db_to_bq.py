@@ -61,10 +61,10 @@ def fetch_and_ingest(table_name, yaml_file, **kwargs):
     conn.close()
 
     #take schema
-    with open(yaml_file, 'r') as file:
-        schema_yaml = yaml.safe_load(file)
-    schemas = [bigquery.SchemaField(col['name'], col['type']) for col in schema_yaml['schema']]
-    print(schema_yaml['table_name'], "table name dari yaml")
+    # with open(yaml_file, 'r') as file:
+    #     schema_yaml = yaml.safe_load(file)
+    # schemas = [bigquery.SchemaField(col['name'], col['type']) for col in schema_yaml['schema']]
+    # print(schema_yaml['table_name'], "table name dari yaml")
 
 
     # Ingest data into BigQuery
