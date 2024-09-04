@@ -264,7 +264,7 @@ rbac:
 
 # Airflow executor
 # One of: LocalExecutor, LocalKubernetesExecutor, CeleryExecutor, KubernetesExecutor, CeleryKubernetesExecutor
-executor: "CeleryExecutor"
+executor: "KubernetesExecutor"
 
 # If this is true and using LocalExecutor/KubernetesExecutor/CeleryKubernetesExecutor, the scheduler's
 # service account will have access to communicate with the api-server and launch pods.
@@ -273,22 +273,7 @@ executor: "CeleryExecutor"
 allowPodLaunching: true
 
 # Environment variables for all airflow containers
-# env:
-# - name: DB_COLMS_NAME_STG
-#   valueFrom:
-#     secretKeyRef:
-#       name: colms  # Sesuaikan nama secret di sini
-#       key: DB_COLMS_NAME_STG
-# - name: DB_COLMS_PASSWORD_STG
-#   valueFrom:
-#     secretKeyRef:
-#       name: colms
-#       key: DB_COLMS_PASSWORD_STG
-# - name: DB_COLMS_PORT_STG
-#   valueFrom:
-#     secretKeyRef:
-#       name: colms
-#       key: DB_COLMS_PORT_STG
+env: []
 # - name: DB_COLMS_SERVER_STG
 #   valueFrom:
 #     secretKeyRef:
@@ -307,25 +292,25 @@ volumes: []
 volumeMounts: []
 
 # Secrets for all airflow containers
-secret: 
+secret: []
 # - envName: ""
 #   secretName: ""
 #   secretKey: ""
-  - envName: DB_COLMS_NAME_STG
-    secretName: colms
-    secretKey: DB_COLMS_NAME_STG
-  - envName: DB_COLMS_PASSWORD_STG
-    secretName: colms
-    secretKey: DB_COLMS_PASSWORD_STG
-  - envName: DB_COLMS_PORT_STG
-    secretName: colms
-    secretKey: DB_COLMS_PORT_STG
-  - envName: DB_COLMS_SERVER_STG
-    secretName: colms
-    secretKey: DB_COLMS_SERVER_STG
-  - envName: DB_COLMS_USERNAME_STG
-    secretName: colms
-    secretKey: DB_COLMS_USERNAME_STG
+  # - envName: DB_COLMS_NAME_STG
+  #   secretName: colms
+  #   secretKey: DB_COLMS_NAME_STG
+  # - envName: DB_COLMS_PASSWORD_STG
+  #   secretName: colms
+  #   secretKey: DB_COLMS_PASSWORD_STG
+  # - envName: DB_COLMS_PORT_STG
+  #   secretName: colms
+  #   secretKey: DB_COLMS_PORT_STG
+  # - envName: DB_COLMS_SERVER_STG
+  #   secretName: colms
+  #   secretKey: DB_COLMS_SERVER_STG
+  # - envName: DB_COLMS_USERNAME_STG
+  #   secretName: colms
+  #   secretKey: DB_COLMS_USERNAME_STG
 
 
 # Enables selected built-in secrets that are set via environment variables by default.
@@ -414,7 +399,9 @@ extraEnv: ~
 
 # Extra envFrom 'items' that will be added to the definition of airflow containers
 # A string is expected (can be templated).
-extraEnvFrom: ~
+extraEnvFrom: |
+  - secretRef:
+      name: 'colms'
 # eg:
 # extraEnvFrom: |
 #   - secretRef:
@@ -670,7 +657,7 @@ workers:
     #   whenDeleted: Delete
     #   whenScaled: Delete
     # Volume size for worker StatefulSet
-    size: 100Gi
+    size: 10Gi
     # If using a custom storageClass, pass name ref to all statefulSets here
     storageClassName:
     # Execute init container to chown log directory.
@@ -1531,6 +1518,7 @@ webserver:
       container: {}
 
   env: []
+    # - name: GOOGLE_APPLICATION_CREDENTIALS
 
 # Airflow Triggerer Config
 triggerer:
@@ -1596,7 +1584,7 @@ triggerer:
     # This policy determines whether PVCs should be deleted when StatefulSet is scaled down or removed.
     persistentVolumeClaimRetentionPolicy: ~
     # Volume size for triggerer StatefulSet
-    size: 100Gi
+    size: 10Gi
     # If using a custom storageClass, pass name ref to all statefulSets here
     storageClassName:
     # Execute init container to chown log directory.
@@ -2590,25 +2578,174 @@ multiNamespaceMode: false
 # (e.g. `workers.resources`). As such, you normally won't need to override this directly, however,
 # you can still provide a completely custom `pod_template_file.yaml` if desired.
 # If not set, a default one is created using `files/pod-template-file.kubernetes-helm-yaml`.
-podTemplate: ~
+# podTemplate: ~
 # The following example is NOT functional, but meant to be illustrative of how you can provide a custom
 # `pod_template_file`. You're better off starting with the default in
 # `files/pod-template-file.kubernetes-helm-yaml` and modifying from there.
 # We will set `priorityClassName` in this example:
-# podTemplate: |
-#   apiVersion: v1
-#   kind: Pod
-#   metadata:
-#     name: placeholder-name
-#     labels:
-#       tier: airflow
-#       component: worker
-#       release: {{ .Release.Name }}
-#   spec:
-#     priorityClassName: high-priority
-#     containers:
-#       - name: base
-#         ...
+podTemplate: |
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: placeholder-name
+    labels:
+      tier: airflow
+      component: worker
+      release: airflow
+    annotations:
+      cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+  spec:
+    initContainers:      
+      - name: git-sync-init
+        image: registry.k8s.io/git-sync/git-sync:v4.1.0
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 65533
+        envFrom:  
+          []
+        env:
+          - name: GIT_SYNC_REV
+            value: "HEAD"
+          - name: GITSYNC_REF
+            value: "v2-2-stable"
+          - name: GIT_SYNC_BRANCH
+            value: "main"
+          - name: GIT_SYNC_REPO
+            value: "https://github.com/farizaarifah/k8s-airflow-bq.git"
+          - name: GITSYNC_REPO
+            value: "https://github.com/farizaarifah/k8s-airflow-bq.git"
+          - name: GIT_SYNC_DEPTH
+            value: "1"
+          - name: GITSYNC_DEPTH
+            value: "1"
+          - name: GIT_SYNC_ROOT
+            value: "/git"
+          - name: GITSYNC_ROOT
+            value: "/git"
+          - name: GIT_SYNC_DEST
+            value: "repo"
+          - name: GITSYNC_LINK
+            value: "repo"
+          - name: GIT_SYNC_ADD_USER
+            value: "true"
+          - name: GITSYNC_ADD_USER
+            value: "true"
+          - name: GITSYNC_PERIOD
+            value: "5s"
+          - name: GIT_SYNC_MAX_SYNC_FAILURES
+            value: "0"
+          - name: GITSYNC_MAX_FAILURES
+            value: "0"
+          - name: GIT_SYNC_ONE_TIME
+            value: "true"
+          - name: GITSYNC_ONE_TIME
+            value: "true"
+        resources: 
+          {}
+        volumeMounts:
+        - name: dags
+          mountPath: /git
+    containers:
+      - envFrom:      
+          - secretRef:
+              name: 'colms'
+          
+        env:
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /opt/account/secrets/application_default_credentials.json
+          - name: AIRFLOW__CORE__EXECUTOR
+            value: LocalExecutor      
+          # Hard Coded Airflow Envs
+          - name: AIRFLOW__CORE__FERNET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: airflow-fernet-key
+                key: fernet-key
+          - name: AIRFLOW_HOME
+            value: /opt/airflow
+          # For Airflow <2.3, backward compatibility; moved to [database] in 2.3
+          - name: AIRFLOW__CORE__SQL_ALCHEMY_CONN
+            valueFrom:
+              secretKeyRef:
+                name: airflow-metadata
+                key: connection
+          - name: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
+            valueFrom:
+              secretKeyRef:
+                name: airflow-metadata
+                key: connection
+          - name: AIRFLOW_CONN_AIRFLOW_DB
+            valueFrom:
+              secretKeyRef:
+                name: airflow-metadata
+                key: connection
+          - name: AIRFLOW__WEBSERVER__SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: airflow-webserver-secret-key
+                key: webserver-secret-key      
+          # Dynamically created environment variables
+          # Dynamically created secret envs
+          
+          # Extra env      
+        image: ~
+        imagePullPolicy: IfNotPresent
+        securityContext: 
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+        name: base
+        resources:
+          {}
+        volumeMounts:
+          - mountPath: "/opt/airflow/logs"
+            name: logs
+          - name: config
+            mountPath: "/opt/airflow/airflow.cfg"
+            subPath: airflow.cfg
+            readOnly: true
+          - name: config
+            mountPath: "/opt/airflow/config/airflow_local_settings.py"
+            subPath: airflow_local_settings.py
+            readOnly: true
+          - name: dags
+            mountPath: /opt/airflow/dags
+            readOnly: True
+          - name: airflow-gcp-credentials-v
+            mountPath: /opt/account/secrets
+            readOnly: true
+
+    restartPolicy: Never
+    securityContext: 
+      runAsUser: 50000
+      fsGroup: 0
+    nodeSelector:
+      {}
+    affinity:
+      {}
+    terminationGracePeriodSeconds: 600
+    tolerations:
+      []
+    topologySpreadConstraints:
+      []
+    serviceAccountName: composer-cluster-sa
+    volumes:
+    - name: dags
+      emptyDir:
+        {}
+    - name: logs
+      persistentVolumeClaim:
+        claimName: airflow-logs-02
+    - name: airflow-gcp-credentials-v
+      secret:
+        secretName: airflow-gcp-credentials
+        items: 
+        - key: application_default_credentials.json
+          path: application_default_credentials.json
+    - configMap:
+        name: airflow-config
+      name: config
 
 # Git sync
 dags:
@@ -2751,13 +2888,13 @@ logs:
 
   persistence:
     # Enable persistent volume for storing logs
-    enabled: false
+    enabled: True
     # Volume size for logs
-    size: 100Gi
+    size: 10Gi
     # Annotations for the logs PVC
     annotations: {}
     # If using a custom storageClass, pass name here
     storageClassName:
     ## the name of an existing PVC to use
-    existingClaim:
+    existingClaim: airflow-logs-02
 

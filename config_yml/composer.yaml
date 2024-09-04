@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: composer-cluster-sa
+  namespace: airflow2
+  uid: e07b3d64-a552-4aca-9449-5d5ffda384bd
+  resourceVersion: '1071093'
+  creationTimestamp: '2024-08-08T15:35:49Z'
+  annotations:
+    iam.gke.io/gcp-service-account: composer-cluster-sa@alami-group-data.iam.gserviceaccount.com
+    kubectl.kubernetes.io/last-applied-configuration: >
+      {"apiVersion":"v1","kind":"ServiceAccount","metadata":{"annotations":{"iam.gke.io/gcp-service-account":"composer-cluster-sa@alami-group-data.iam.gserviceaccount.com"},"creationTimestamp":"2022-11-23T04:00:04Z","name":"composer-cluster-sa","namespace":"airflow-k8-local","resourceVersion":"843741","selfLink":"/api/v1/namespaces/airflow-prod/serviceaccounts/composer-cluster-sa","uid":"5c0a50c2-f187-49b3-b0c5-2f90ac0fb84b"}}
+  managedFields:
+    - manager: kubectl-client-side-apply
+      operation: Update
+      apiVersion: v1
+      time: '2024-08-08T15:35:49Z'
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:annotations:
+            .: {}
+            f:iam.gke.io/gcp-service-account: {}
+            f:kubectl.kubernetes.io/last-applied-configuration: {}
+  selfLink: /api/v1/namespaces/airflow-k8-local/serviceaccounts/composer-cluster-sa
