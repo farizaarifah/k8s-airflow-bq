@@ -41,7 +41,7 @@ def fetch_and_ingest(table_name, yaml_file, **kwargs):
     )
     cursor = conn.cursor()
     print(table_name, "----------------")
-    print(schema_yaml['table_name'], "table name dari yaml")
+    print(yaml_file['table_name'], "table name dari yaml")
     # Define your SQL query to fetch data
     query = "SELECT * FROM colms.{}".format(table_name)
     cursor.execute(query)
