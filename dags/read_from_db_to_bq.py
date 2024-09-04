@@ -41,6 +41,7 @@ def fetch_and_ingest(table_name, yaml_file, **context):
     )
     cursor = conn.cursor()
     print(table_name, "----------------")
+    print(schema_yaml['table_name'], "table name dari yaml")
     # Define your SQL query to fetch data
     query = "SELECT * FROM colms.{}".format(table_name)
     cursor.execute(query)
@@ -118,7 +119,7 @@ for table in tables:
             task_id=f'load_{table['name']}_to_bq',
             python_callable=fetch_and_ingest,
             provide_context=True,
-            op_args={'table_name': table['table_name'], 'yaml_file': table['schema']},
+            op_args={'table_name': table['name'], 'yaml_file': table['schema']},
             dag=dag,
         )
 
