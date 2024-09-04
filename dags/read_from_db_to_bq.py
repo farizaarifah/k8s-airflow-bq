@@ -25,7 +25,7 @@ dag = DAG(
 )
 
 # Define the function to fetch data from PostgreSQL
-def fetch_and_ingest(table_name, yaml_file, **context):
+def fetch_and_ingest(table_name, yaml_file, **kwargs):
     conn = psycopg2.connect(
         # DB_COLMS_NAME_STG
         # DB_COLMS_PASSWORD_STG
@@ -119,7 +119,7 @@ for table in tables:
             task_id=f'load_{table['name']}_to_bq',
             python_callable=fetch_and_ingest,
             provide_context=True,
-            op_args={'table_name': table['name'], 'yaml_file': table['schema']},
+            op_args=[table['name'], table['schema']],
             dag=dag,
         )
 
