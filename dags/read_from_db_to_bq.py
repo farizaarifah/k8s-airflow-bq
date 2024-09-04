@@ -5,6 +5,10 @@ import psycopg2
 import pandas as pd
 from datetime import datetime
 import os
+import yaml
+
+from airflow.configuration import conf
+DAGS_FOLDER = conf.get("core", "dags_folder")
 
 # Define default arguments for the DAG
 default_args = {
@@ -21,7 +25,7 @@ dag = DAG(
 )
 
 # Define the function to fetch data from PostgreSQL
-def fetch_and_ingest():
+def fetch_and_ingest(table_name, yaml_file, **context):
     conn = psycopg2.connect(
         # DB_COLMS_NAME_STG
         # DB_COLMS_PASSWORD_STG
@@ -38,7 +42,7 @@ def fetch_and_ingest():
     cursor = conn.cursor()
 
     # Define your SQL query to fetch data
-    query = "SELECT * FROM colms.company"
+    query = "SELECT * FROM colms.{table_name}"
     cursor.execute(query)
 
     # Fetch all rows from the query result
@@ -55,12 +59,18 @@ def fetch_and_ingest():
     cursor.close()
     conn.close()
 
+    #take schema
+    with open(yaml_file, 'r') as file:
+        schema_yaml = yaml.safe_load(file)
+    schemas = [bigquery.SchemaField(col['name'], col['type']) for col in schema_yaml['schema']]
+
+
     # Ingest data into BigQuery
     client = bigquery.Client('alami-group-data')
 
     # Define your dataset and table name
     dataset_id = 'temp_7_days'
-    table_id = 'colms_company'
+    table_id = 'colms_{table_name}'
     table_id= dataset_id + "." + table_id
 
     # dari dokumentasi
@@ -78,6 +88,7 @@ def fetch_and_ingest():
         # Optionally, set the write disposition. BigQuery appends loaded rows
         # to an existing table by default, but with WRITE_TRUNCATE write
         # disposition it replaces the table with the loaded data.
+        schema=schemas,
         write_disposition="WRITE_TRUNCATE",
     )
 
@@ -92,13 +103,24 @@ def fetch_and_ingest():
             table.num_rows, len(table.schema), table_id
         )
     )
+tables = [
+    {'name': 'company', 'schema': './schema_tables/company.yaml'}
+]
 
+for table in tables:
 # Create a PythonOperator to run the fetch and ingest function
-fetch_and_ingest_task = PythonOperator(
-    task_id='fetch_and_ingest_task',
-    python_callable=fetch_and_ingest,
-    dag=dag,
-)
+    # fetch_and_ingest_task = PythonOperator(
+    #     task_id='fetch_and_ingest_task',
+    #     python_callable=fetch_and_ingest,
+    #     dag=dag,
+    # )
+    fetch_and_ingest_task = PythonOperator(
+            task_id=f'load_{table['name']}_to_bq',
+            python_callable=fetch_and_ingest,
+            provide_context=True,
+            op_args={'table_name': table['name'], 'yaml_file': table['schema']},
+            dag=dag,
+        )
 
 # Set task dependencies if needed (for this example, there's only one task)
 fetch_and_ingest_task

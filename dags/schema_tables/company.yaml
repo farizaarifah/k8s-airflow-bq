@@ -1,0 +1,9 @@
+#schema table company
+table_name: "company"
+schema:
+  - name: "column1"
+    type: "STRING"
+  - name: "column2"
+    type: "INTEGER"
+  - name: "column3"
+    type: "TIMESTAMP"
