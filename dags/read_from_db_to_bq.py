@@ -111,8 +111,8 @@ tables = [
     {'name': 'company', 'schema': '/opt/airflow/dags/repo/dags/schema_tables/company.yaml'}
 ]
 
-current_path = pathlib.Path(DAGS_FOLDER).absolute()
-config_dir_path = current_path.joinpath("datalake_configs")
+current_path = pathlib.Path("/opt/airflow/dags/repo/dags/").absolute()
+config_dir_path = current_path.joinpath("schema_tables")
 
 for yaml_path in config_dir_path.glob("*.y*ml"):
     # yml_conf = YAML().load(yaml_path.open("r"))
@@ -137,4 +137,4 @@ for yaml_path in config_dir_path.glob("*.y*ml"):
     #     )
 
 # Set task dependencies if needed (for this example, there's only one task)
-fetch_and_ingest_task
+# fetch_and_ingest_task
