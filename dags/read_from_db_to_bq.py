@@ -105,7 +105,7 @@ def fetch_and_ingest(table_name, yaml_file, **context):
         )
     )
 tables = [
-    {'name': 'company', 'schema': './schema_tables/company.yaml'}
+    {'name': 'company', 'schema': 'schema_tables/company.yaml'}
 ]
 
 for table in tables:
