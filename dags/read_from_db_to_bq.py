@@ -41,7 +41,7 @@ def fetch_and_ingest(table_name, yaml_file, **kwargs):
     )
     cursor = conn.cursor()
     print(table_name, "----------------")
-    print(yaml_file['table_name'], "table name dari yaml")
+    
     # Define your SQL query to fetch data
     query = "SELECT * FROM colms.{}".format(table_name)
     cursor.execute(query)
@@ -64,6 +64,7 @@ def fetch_and_ingest(table_name, yaml_file, **kwargs):
     with open(yaml_file, 'r') as file:
         schema_yaml = yaml.safe_load(file)
     schemas = [bigquery.SchemaField(col['name'], col['type']) for col in schema_yaml['schema']]
+    print(schema_yaml['table_name'], "table name dari yaml")
 
 
     # Ingest data into BigQuery
