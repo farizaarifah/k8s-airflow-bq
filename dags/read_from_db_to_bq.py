@@ -6,7 +6,7 @@ import pandas as pd
 from datetime import datetime
 import os
 import yaml
-
+import pathlib
 from airflow.configuration import conf
 DAGS_FOLDER = conf.get("core", "dags_folder")
 
@@ -90,7 +90,8 @@ def fetch_and_ingest(table_name, yaml_file, **kwargs):
         # Optionally, set the write disposition. BigQuery appends loaded rows
         # to an existing table by default, but with WRITE_TRUNCATE write
         # disposition it replaces the table with the loaded data.
-        schema=schemas,
+        # schema=schemas,
+        schema=yaml_file,
         write_disposition="WRITE_TRUNCATE",
     )
 
@@ -105,24 +106,35 @@ def fetch_and_ingest(table_name, yaml_file, **kwargs):
             table.num_rows, len(table.schema), table_id
         )
     )
+
 tables = [
     {'name': 'company', 'schema': '/opt/airflow/dags/repo/dags/schema_tables/company.yaml'}
 ]
 
-for table in tables:
+current_path = pathlib.Path(DAGS_FOLDER).absolute()
+config_dir_path = current_path.joinpath("datalake_configs")
+
+for yaml_path in config_dir_path.glob("*.y*ml"):
+    # yml_conf = YAML().load(yaml_path.open("r"))
+    with open(yaml_path, 'r') as file:
+        yaml_config = yaml.safe_load(file)
+    fetch_and_ingest_task = PythonOperator(
+        task_id=f'load_{yaml_config['table_name']}_to_bq',
+        python_callable=fetch_and_ingest,
+        provide_context=True,
+        op_args=[yaml_config['table_name'], yaml_config['schema']],
+        dag=dag,
+    )
+
+# for table in tables:
 # Create a PythonOperator to run the fetch and ingest function
     # fetch_and_ingest_task = PythonOperator(
-    #     task_id='fetch_and_ingest_task',
-    #     python_callable=fetch_and_ingest,
-    #     dag=dag,
-    # )
-    fetch_and_ingest_task = PythonOperator(
-            task_id=f'load_{table['name']}_to_bq',
-            python_callable=fetch_and_ingest,
-            provide_context=True,
-            op_args=[table['name'], table['schema']],
-            dag=dag,
-        )
+    #         task_id=f'load_{table['name']}_to_bq',
+    #         python_callable=fetch_and_ingest,
+    #         provide_context=True,
+    #         op_args=[table['name'], table['schema']],
+    #         dag=dag,
+    #     )
 
 # Set task dependencies if needed (for this example, there's only one task)
 fetch_and_ingest_task
