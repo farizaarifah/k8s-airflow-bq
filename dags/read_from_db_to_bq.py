@@ -27,11 +27,6 @@ dag = DAG(
 # Define the function to fetch data from PostgreSQL
 def fetch_and_ingest(table_name, yaml_file, **kwargs):
     conn = psycopg2.connect(
-        # DB_COLMS_NAME_STG
-        # DB_COLMS_PASSWORD_STG
-        # DB_COLMS_PORT_STG
-        # DB_COLMS_SERVER_STG
-        # DB_COLMS_USERNAME_STG
         host=os.environ.get("DB_COLMS_SERVER_STG"),
         user=os.environ.get("DB_COLMS_USERNAME_STG"),
         password=os.environ.get("DB_COLMS_PASSWORD_STG"),
@@ -80,16 +75,10 @@ def fetch_and_ingest(table_name, yaml_file, **kwargs):
         # Specify a (partial) schema. All columns are always written to the
         # table. The schema is used to assist in data type definitions.
         # schema=[
-        #     # Specify the type of columns whose type cannot be auto-detected. For
-        #     # example the "title" column uses pandas dtype "object", so its
-        #     # data type is ambiguous.
         #     bigquery.SchemaField("title", bigquery.enums.SqlTypeNames.STRING),
         #     # Indexes are written if included in the schema by name.
         #     bigquery.SchemaField("wikidata_id", bigquery.enums.SqlTypeNames.STRING),
         # ],
-        # Optionally, set the write disposition. BigQuery appends loaded rows
-        # to an existing table by default, but with WRITE_TRUNCATE write
-        # disposition it replaces the table with the loaded data.
         # schema=schemas,
         schema=yaml_file,
         write_disposition="WRITE_TRUNCATE",
