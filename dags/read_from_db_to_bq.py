@@ -42,7 +42,7 @@ def fetch_and_ingest(table_name, yaml_file, **context):
     cursor = conn.cursor()
 
     # Define your SQL query to fetch data
-    query = "SELECT * FROM colms.{table_name}"
+    query = "SELECT * FROM colms.{}".format(table_name)
     cursor.execute(query)
 
     # Fetch all rows from the query result
@@ -70,7 +70,7 @@ def fetch_and_ingest(table_name, yaml_file, **context):
 
     # Define your dataset and table name
     dataset_id = 'temp_7_days'
-    table_id = 'colms_{table_name}'
+    table_id = f'colms_{table_name}'
     table_id= dataset_id + "." + table_id
 
     # dari dokumentasi
