@@ -1,0 +1,64 @@
+database: colms_prod
+template: templates/pipeline-datalake-p2p_prod-production-to-bq.py.tmpl
+dataset: datalakes
+type: postgresql
+schema: colms
+schedule : 10 18 * * *
+tables:
+    - name: loan_application
+      encryption: false
+      status: on
+    - name: obligor
+      encryption: false
+      status: on
+    - name: product
+      encryption: false
+      status: on
+    - name: status
+      encryption: false
+      status: on
+    - name: company
+      encryption: false
+      status: on
+    - name: users
+      encryption: false
+      status: on
+    - name: pic_assignment
+      encryption: false
+      status: on
+    - name: pic_assignment_log
+      encryption: false
+      status: on
+    - name: master_activity_type
+      encryption: false
+      status: on
+    - name: role
+      encryption: false
+      status: on
+    - name: role_assignment
+      encryption: false
+      status: on
+    - name: permission
+      encryption: false
+      status: on
+    - name: master_activity_type_follow_up
+      encryption: false
+      status: on
+    - name: master_activity_follow_up
+      encryption: false
+      status: on
+    - name: permission_assignment
+      encryption: false
+      status: on
+    - name: master_bank
+      encryption: false
+      status: on
+    - name: master_activity_type_result
+      encryption: false
+      status: on
+    - name: master_activity_result
+      encryption: false
+      status: on
+    - name: collection_activity
+      encryption: false
+      status: on
